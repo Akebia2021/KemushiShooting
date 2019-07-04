@@ -5,11 +5,22 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    //HeaderをつければInspectorでの表示が見やすくなる
+    [Header("Player Movement")]
     [SerializeField] private float moveSpeed = 10f;
     [SerializeField] private float padding = 0.2f;
+
+    [Header("Projectile")]
     [SerializeField] private GameObject projectile;
     [SerializeField] private float bulletSpeed = 10f;
     [SerializeField] private float bulletFirePeriod = 0.1f;
+
+    [Header("Health")]
+    [SerializeField] private float health = 500;
+
+    [Header("SFX")]
+    [SerializeField] AudioClip fire;
+    [SerializeField] AudioClip death;
 
     Coroutine firingCoroutine;
 
@@ -27,6 +38,7 @@ public class Player : MonoBehaviour
         tr = GetComponent<Transform>();
      
         StartUpMoveBoundaries();
+
     }
 
     private void StartUpMoveBoundaries()
@@ -84,8 +96,31 @@ public class Player : MonoBehaviour
                 transform.position, Quaternion.identity) as GameObject;
             bullet.GetComponent<Rigidbody2D>().velocity =
                 new Vector2(0, bulletSpeed);
+            //play sound effect
+            AudioSource.PlayClipAtPoint(fire, transform.position, 1f);
             yield return new WaitForSeconds(bulletFirePeriod);
         }
     }
+
+    //衝突判定(弾)
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        DamageDealer damageDealer = other.gameObject.GetComponent<DamageDealer>();
+        if (!damageDealer) { return; }
+        ProcessHit(damageDealer);
+    }
+    //ヒット処理とObject破壊
+    private void ProcessHit(DamageDealer damageDealer)
+    {
+        health -= damageDealer.GetDamage();
+        damageDealer.Hit();
+        if (health <= 0)
+        {
+            AudioSource.PlayClipAtPoint(death, transform.position, 1f);
+            Destroy(gameObject);
+
+        }
+    }
+    
 
 }

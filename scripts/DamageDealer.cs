@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//このスクリプトは弾などにアタッチする
 public class DamageDealer : MonoBehaviour
 {
 
